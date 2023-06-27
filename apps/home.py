@@ -170,7 +170,7 @@ layout = html.Div(
                         dbc.Card(
                             [
                                 dbc.CardHeader(
-                                    html.H3('All Accounts')
+                                    html.H3('My Accounts')
                                 ),
                                 dbc.CardBody(
                                     [
@@ -214,7 +214,7 @@ layout = html.Div(
                         dbc.Card(
                             [
                                 dbc.CardHeader(
-                                    html.H3('All Transactions')
+                                    html.H3('My Transactions')
                                 ),
                                 dbc.CardBody(
                                     [
@@ -266,11 +266,16 @@ def welcome(pathname,user_id):
         #load accounts and transactions data
 
 @app.callback(
-    [Output('home-trans_list', 'children'), Output('trans_df','data')],
-    [Input('home-url','pathname')],
+    [Output('trans_df','data')],
+    [
+        Input('home-url','pathname'),
+        Input("dates_covered",'start_date'),
+        Input("dates_covered", 'end_date'),
+        Input("home-acc_dropdown", 'value'),
+    ],
     State('currentuserid','data')
 )
-def display_trans_home(pathname, user_id):
+def create_trans_dict(pathname, start_date, end_date, acc_id_list, user_id):
     if pathname == '/home' or (pathname == '/' and user_id > 0):
         #print("Display transactions triggered.")
 
@@ -290,25 +295,26 @@ def display_trans_home(pathname, user_id):
 
         if not df.empty:
             df_dict = {"data-frame": df.to_dict("records")}
-            df = df[['Account','Type','Date','Amount','Notes']]
-
-
-            table = dbc.Table.from_dataframe(df, striped=True, bordered=True, 
-                                            hover=True, size='sm')
             
-            return [table, df_dict]
+            return [df_dict]
         else:
-            return ['No transactions yet. Click "Transactions" to add your first one.', None]
+            return [None]
 
     else:
         raise PreventUpdate
     
+    
 @app.callback(
     [Output('home-acc_list', 'children'), Output('acc_df','data')],
-    [Input('home-url','pathname')],
+    [
+        Input('home-url','pathname'),
+        Input("home-acc_dropdown", 'value'),
+        Input("dates_covered", 'end_date'),
+
+    ],
     State('currentuserid','data')
 )
-def display_accs(pathname, user_id):
+def display_accs(pathname, acc_id_list, end_date, user_id):
     if pathname == '/home' or (pathname == '/' and user_id > 0):
         #print("Display accounts triggered.")
 
@@ -321,16 +327,16 @@ def display_accs(pathname, user_id):
             '''
         
         values = [user_id]
-        cols = ['ID', 'Account Name','Type','Balance']
+        cols = ['ID', 'Account Name','Type','Current Balance']
 
         df = db.querydatafromdatabase(sql, values, cols)
 
         if not df.empty: 
             df_dict = {"data-frame": df.to_dict("records")}
-            df = df[['Account Name','Type','Balance']]
+            df = df[df['ID'].isin(acc_id_list)]
+            df = df[['Account Name','Type','Current Balance']]
 
-            df['Balance'] = ["{:,.2f}".format(x) for x in df['Balance'].tolist()]
-
+            df['Current Balance'] = ["{:,.2f}".format(x) for x in df['Current Balance'].tolist()]
 
             table = dbc.Table.from_dataframe(df, striped=True, bordered=True, 
                                             hover=True, size='sm')
@@ -405,7 +411,8 @@ def set_start_date(time, trans_dict):
         Output("total_income", 'children'),
         Output("total_expenses", 'children'),
         Output("net_gainloss", 'children'),
-        Output("net_card", 'color')   
+        Output("net_card", 'color'),
+        Output('home-trans_list', 'children'),   
     ],
     [
         Input("dates_covered",'start_date'),
@@ -438,17 +445,23 @@ def update_totalcards(start_date, end_date, acc_id_list, trans_dict):
         else:
             color = 'warning'
 
+        filtered_date_df = filtered_date_df[['Account','Type','Date','Amount','Notes']]
+
+        table = dbc.Table.from_dataframe(filtered_date_df, striped=True, bordered=True, 
+                                            hover=True, size='sm')
+
 
         return [
             "{:,.2f}".format(total_income),
             "{:,.2f}".format(total_expenses),
             "{:,.2f}".format(net_gainloss),
-            color
+            color,
+            table
         ]     
 
 
     else:
-        raise PreventUpdate
+        return [None, None, None, None, 'No transactions. Click "Transactions" to add one.']
 
 
 
