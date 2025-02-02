@@ -1,3 +1,47 @@
+# SpendSense - Expense Tracker
+
+SpendSense is a **Dash-based** expense tracking application that connects to a **PostgreSQL** database for secure and efficient financial record-keeping. It provides interactive visualizations and tools to help users monitor their spending habits.
+
+## Features
+- **Expense Tracking**: Effortlessly add, edit, or remove transactions.
+- **Account Monitoring**: Keep track of balances across multiple accounts in real-time.
+- **Interactive Summaries**: Filter and customize summary tables to focus on the data that matters most.
+- **Secure Data Storage**: Uses PostgreSQL for structured, reliable, and secure data management.
+
+## Installation & Setup
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/your-username/SpendSense-Expense-Tracker.git
+cd SpendSense-Expense-Tracker
+```
+
+### 2. Install Dependencies
+Make sure you have Python installed, then install the required packages:
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Set Up PostgreSQL
+Ensure you have a PostgreSQL database running. Create a database and update your .env file with the correct credentials:
+
+```plaintext
+DB_NAME=your_database
+DB_USER=your_username
+DB_PASSWORD=your_password
+DB_HOST=localhost
+DB_PORT=5432
+```
+
+4. Run the Application
+```
+python app.py
+```
+Then, open http://localhost:8050/ in your browser.
+
+
+
 ## Application Screenshots
 ### Log-in Page
 <img width="1386" alt="image" src="https://github.com/user-attachments/assets/1242dc0e-9b76-4222-9abb-dd5218c4ce16" />
